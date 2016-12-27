@@ -5,85 +5,124 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 
+/*InsertionPQ implement PriorityQueue using Insertion Sort for inserting.*/
 class InsertionPQ{
-//	private ArrayList<Integer> keys;
-//	private ArrayList<Integer> sortedKeys;
-//	private ArrayList<Integer> ind;
-	public ArrayList<Integer> keys;
-	public ArrayList<Integer> sortedKeys;
-	public ArrayList<Integer> ind;
-	
+
+	private ArrayList<Integer> keys;
+	private ArrayList<Integer> ind;
+	private int n;
 	
 	public InsertionPQ(){
 		keys = new ArrayList<Integer>();
-		sortedKeys = new ArrayList<Integer>();
 		ind = new ArrayList<Integer>();
+		n = 0;
 	}
 	public void insert(int e){
-		keys.add(e);
-		int i = 0;
-		int in =  keys.size()-1;
-		for (; i < sortedKeys.size(); i++){
-			if (sortedKeys.get(i) > e){
-				sortedKeys.add(i, e);
-				ind.add(i, in);
-				break;
-			}
-		}
-		if (i==sortedKeys.size()){
-			sortedKeys.add(e);
-			ind.add(in);
-
-		}
-		
+		int index = keys.size();
+		set(index, e);
+		n++;
 	}
-	public void insert(int index, int e){
-		keys.add(index, e);
-		int i;
-		
-		for (i = 0; i < ind.size(); i++){
-			int current = ind.get(i);
-			if (current >= index)
-				ind.set(i, current+1);
+	
+	public void set(int index, int element){
+		if (index == keys.size()){
+			keys.add(element);
+		}else{
+			if (keys.get(index)==null)
+				n++;
+			keys.set(index, element);
 		}
-		
-		for (i = 0; i < sortedKeys.size(); i++){
-			if (sortedKeys.get(i) > e){
-				sortedKeys.add(i, e);
+		int i;
+		for (i = 0; i < ind.size(); i++){
+			int in = ind.get(i);
+			if (keys.get(in) != null && keys.get(in) > element){
 				ind.add(i, index);
 				break;
 			}
 		}
-		if (i==sortedKeys.size()){
-			sortedKeys.add(e);
+		if (i == ind.size())
 			ind.add(index);
-
-		}
+		
 	}
 	public void removeMin(){
 		if (isEmpty())
 			return;
 		int minIndex = getMinIndex();
-		keys.remove(minIndex);
-		sortedKeys.remove(0);
+		keys.set(minIndex, null);
+		n--;
 		ind.remove(0);
-		for (int i = 0; i < ind.size(); i++){
-			int current = ind.get(i);
-			if (current > minIndex)
-				ind.set(i, current-1);
-		}
+		
 	}
 	public int getMinValue(){
-		return sortedKeys.get(0);
+		return keys.get(getMinIndex());
 	}
 	public int getMinIndex(){
 		return ind.get(0);
 	}
 	
 	public boolean isEmpty(){
-		return keys.isEmpty();
+		return n == 0;
 	}
 }
+/* HeapPQ implement PriorityQueue using Heap
+class HeapPQ{
+	private ArrayList<Integer> keys;
+	private ArrayList<Integer> ind;
+	private int n;
+	
+	public HeapPQ(){
+		keys = new ArrayList<Integer>();
+		ind = new ArrayList<Integer>();
+		n = 0;
+	}
+	public void insert(int e){
+		int index = keys.size();
+		set(index, e);
+		n++;
+	}
+	
+	public void set(int index, int element){
+		if (index == keys.size()){
+			keys.add(element);
+		}else{
+			if (keys.get(index)==null)
+				n++;
+			keys.set(index, element);
+		}
+		int i;
+		for (i = 0; i < ind.size(); i++){
+			int in = ind.get(i);
+			if (keys.get(in) != null && keys.get(in) > element){
+				ind.add(i, index);
+				break;
+			}
+		}
+		if (i == ind.size())
+			ind.add(index);
+		
+	}
+	public void removeMin(){
+		if (isEmpty())
+			return;
+		int minIndex = getMinIndex();
+		keys.set(minIndex, null);
+		n--;
+		ind.remove(0);
+		
+	}
+	public int getMinValue(){
+		return keys.get(getMinIndex());
+	}
+	public int getMinIndex(){
+		return ind.get(0);
+	}
+	
+	public boolean isEmpty(){
+		return n == 0;
+	}
+}
+
+*/
+
 public class MultiwayMergeSort {
 	public void mergeSort(DataInputStream[] diss){
 		PriorityQueue pq = new PriorityQueue(diss.length);
@@ -96,37 +135,27 @@ public class MultiwayMergeSort {
 		InsertionPQ pq = new InsertionPQ();
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		for (ArrayList<Integer> a : inputs){
-			if (!a.isEmpty())
+			if (!a.isEmpty()){
 				pq.insert(a.get(0));
 				a.remove(0);
+			}
 		}
 		int minIndex;
 		while (!pq.isEmpty()){
 			result.add(pq.getMinValue());
 			minIndex = pq.getMinIndex();
-			System.out.println(pq.keys);
 			pq.removeMin();
-			System.out.println(result);
 			
 			if (!inputs.get(minIndex).isEmpty()){
-				pq.insert(minIndex, inputs.get(minIndex).get(0));
+				pq.set(minIndex, inputs.get(minIndex).get(0));
 				inputs.get(minIndex).remove(0);
 			}
 		}
 		System.out.println(result);
 	}
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-//		InsertionPQ pq = new InsertionPQ();
-//		pq.insert(0,7);
-//		pq.insert(0,8);
-//		pq.insert(0,12);
-//		pq.insert(0,4);
-//		System.out.println(pq.ind);
-//		System.out.println(pq.keys);
-//		System.out.println(pq.sortedKeys);
-		
-		Integer[] a = {1, 3, 7, 8};
+				
+		Integer[] a = {16};
 		ArrayList<Integer> aList = new ArrayList(Arrays.asList(a));
 		Integer[] b = {2, 3, 5, 8};
 		ArrayList<Integer> bList = new ArrayList(Arrays.asList(b));
@@ -136,7 +165,6 @@ public class MultiwayMergeSort {
 		inputs.add(aList);
 		inputs.add(bList);
 		inputs.add(cList);
-		System.out.println(inputs.get(2));
 		mergeSort(inputs);
 
 	}
