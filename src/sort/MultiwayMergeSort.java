@@ -1,6 +1,5 @@
 package sort;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,16 +7,21 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.PriorityQueue;
-
-import generator.IntegerGenerator;
 
 class MMReadStream{
 //	private FileChannel fileChannel;
 	public FileChannel fileChannel;
 	private MappedByteBuffer buffer;
 	
+	public MappedByteBuffer getBuffer() {
+		return buffer;
+	}
+
+	public void setBuffer(MappedByteBuffer buffer) {
+		this.buffer = buffer;
+	}
+
 	public MMReadStream(String fileLocation){
 		try {
 			fileChannel = new RandomAccessFile(new File(fileLocation), "r").getChannel();
@@ -44,19 +48,24 @@ class MMWriteStream{
 //	private FileChannel fileChannel;
 	public FileChannel fileChannel;
 	private MappedByteBuffer buffer;
-	public MMWriteStream(String fileLocation, int length){
+	public MMWriteStream(String fileLocation){
 		try {
 			fileChannel = new RandomAccessFile(new File(fileLocation), "rw").getChannel();
-			buffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, length);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	public void setBuffer(int length){
+		try {
+			buffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, length);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+		
 	public void close(){
 		try {
 			fileChannel.close();
@@ -73,165 +82,112 @@ class MMWriteStream{
 		buffer.clear();
 	}
 }
-/*InsertionPQ implement PriorityQueue using Insertion Sort for inserting.*/
-class InsertionPQ{
 
-	private ArrayList<Integer> keys;
-	private ArrayList<Integer> ind;
-	private int n;
+class Entry implements Comparable<Entry>{
+	private int stream;
+	private int value;
 	
-	public InsertionPQ(){
-		keys = new ArrayList<Integer>();
-		ind = new ArrayList<Integer>();
-		n = 0;
+	public Entry(int s, int v){
+		stream = s;
+		value = v;
 	}
-	public void insert(int e){
-		int index = keys.size();
-		set(index, e);
-		n++;
+	public int getStream() {
+		return stream;
 	}
-	
-	public void set(int index, int element){
-		if (index == keys.size()){
-			keys.add(element);
-		}else{
-			if (keys.get(index)==null)
-				n++;
-			keys.set(index, element);
-		}
-		int i;
-		for (i = 0; i < ind.size(); i++){
-			int in = ind.get(i);
-			if (keys.get(in) != null && keys.get(in) > element){
-				ind.add(i, index);
-				break;
-			}
-		}
-		if (i == ind.size())
-			ind.add(index);
-		
+
+
+	public void setStream(int stream) {
+		this.stream = stream;
 	}
-	public void removeMin(){
-		if (isEmpty())
-			return;
-		int minIndex = getMinIndex();
-		keys.set(minIndex, null);
-		n--;
-		ind.remove(0);
-		
+
+
+	public int getValue() {
+		return value;
 	}
-	public int getMinValue(){
-		return keys.get(getMinIndex());
+
+
+	public void setValue(int value) {
+		this.value = value;
 	}
-	public int getMinIndex(){
-		return ind.get(0);
+
+
+	@Override
+	public int compareTo(Entry o) {
+		// TODO Auto-generated method stub
+		int v = o.getValue();
+		return value > v ? 1: (value==v? 0 : -1) ;
 	}
 	
-	public boolean isEmpty(){
-		return n == 0;
-	}
 }
 
 public class MultiwayMergeSort {
-	public void mergeSort(DataInputStream[] diss){
-		PriorityQueue pq = new PriorityQueue(diss.length);
-		for (DataInputStream dis : diss){
-			
-		}
-			
+	private static PriorityQueue<Entry> pq;
+	public MultiwayMergeSort(int d){
+		pq = new PriorityQueue<Entry>(d);
 	}
-	
-	public static void mergeSort(ArrayList<MMReadStream> inputs, ArrayList<Integer> result){
-		ArrayList<ArrayList<Integer>> inp = new ArrayList<ArrayList<Integer>>();
-		for (MMReadStream mms : inputs){
-			ArrayList<Integer> l = new ArrayList<Integer>();
-			while (!mms.isEndOfStream())
-				l.add(mms.readNext());
-			inp.add(l);
-		}
-		mergeSort_(inp, result);
-	}
-	
-	
-	public static void mergeSort_(ArrayList<ArrayList<Integer>> inputs, ArrayList<Integer> result){
-		InsertionPQ pq = new InsertionPQ();
-		for (ArrayList<Integer> a : inputs){
-			if (!a.isEmpty()){
-				pq.insert(a.get(0));
-				a.remove(0);
+	public static void mergeSort(ArrayList<MMReadStream> inputs, MMWriteStream mmws, int availableMemoryForIntermediateResult){
+		//size for result of all merging 
+		int outBufferSize = 0;
+		for (int i=0; i < inputs.size(); i++){
+			Entry e = new Entry(i, inputs.get(i).readNext());
+			pq.add(e);
+			try {
+				outBufferSize += inputs.get(i).fileChannel.size();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
+		mmws.setBuffer(outBufferSize);
+			
 		}
-		int minIndex;
+		int count = availableMemoryForIntermediateResult;
 		while (!pq.isEmpty()){
-			result.add(pq.getMinValue());
-			minIndex = pq.getMinIndex();
-			pq.removeMin();
-			
-			if (!inputs.get(minIndex).isEmpty()){
-				pq.set(minIndex, inputs.get(minIndex).get(0));
-				inputs.get(minIndex).remove(0);
+			if (count != 0)
+				mmws.write(pq.peek().getValue());
+			else{
+				mmws.clear();
+				mmws.write(pq.peek().getValue());
 			}
+			int ind = pq.poll().getStream();
+			if (!inputs.get(ind).isEndOfStream())
+				pq.add(new Entry(ind, inputs.get(ind).readNext()));
+			count--;
 		}
+		mmws.close();
 		
 	}
+	
+	
 	public static void main(String[] args) {
-		int d = 3;
-		ArrayList<MMReadStream> queue = new ArrayList<MMReadStream>();
+		int d = 50;
+		int M = 1000;
+
 		
+		
+		new MultiwayMergeSort(d);
 		int number_of_files = 1000;
-		number_of_files = 5;
+		ArrayList<MMReadStream> queue = new ArrayList<MMReadStream>();
+		long startTime = System.currentTimeMillis();
 		//storing references to splitted files into a queue
-		for (int i=1; i<=number_of_files; i++){
-			String fileLocation = "F://Data//intergers//test//small_interger_" + Integer.toString(i);
+		for (int i=0; i<number_of_files; i++){
+			String fileLocation = "F://Data//intergers//test_//small_interger_" + Integer.toString(i);
 			queue.add(new MMReadStream(fileLocation));
 		}
-		
-		
-		
 		int number_of_file_left = number_of_files;
 		int start = 0;
 		
 		while (number_of_file_left > 1){
-			String output = "F://Data//intergers//test//merged_" + Integer.toString(start);
-			ArrayList<Integer> result = new ArrayList<Integer>(); 
-			mergeSort(new ArrayList(queue.subList(start, d+start)), result);
-			
-			MMWriteStream mmws = new MMWriteStream(output, result.size()*4);
-//			try {
-//				System.out.println(mmws.fileChannel.size());
-//				System.out.println(queue.get(0).fileChannel.size());
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			for (int r : result){
-				
-				mmws.write(r);
-			}
-			System.out.println(result.size());
-			mmws.clear();
-			mmws.close();
+			String output = "F://Data//intergers//test_//merged_" + Integer.toString(start);
+			MMWriteStream mmws = new MMWriteStream(output); 
+			int availableMemoryForIntermediateResult = M - d;
+			mergeSort(new ArrayList(queue.subList(start, d+start < queue.size()? d+start:queue.size())), mmws, availableMemoryForIntermediateResult);
 			
 			queue.add(new MMReadStream(output));
 			start += d;
 			number_of_file_left -= d-1;
-			
-		
-			try {
-				MMReadStream m = queue.get(queue.size()-1);
-				int size_1 = 0;
-				while (!m.isEndOfStream()){
-					m.readNext();
-					size_1++;
-				}
-				System.out.println(size_1);
-				
-				m.fileChannel.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+
 		}
+		System.out.println("time: " + (System.currentTimeMillis() - startTime));
 	}
 
 }
