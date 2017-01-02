@@ -10,10 +10,12 @@ import java.nio.channels.FileChannel;
 public class MMWriteStream {
 //	private FileChannel fileChannel;
 	public FileChannel fileChannel;
-	private MappedByteBuffer buffer;
+	public MappedByteBuffer buffer;
 	public MMWriteStream(String fileLocation){
+		RandomAccessFile raf = null; 
 		try {
-			fileChannel = new RandomAccessFile(new File(fileLocation), "rw").getChannel();
+			raf = new RandomAccessFile(new File(fileLocation), "rw");
+			fileChannel = raf.getChannel();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -22,6 +24,7 @@ public class MMWriteStream {
 	
 	public void setBuffer(long position, long size){
 		try {
+			
 			buffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, position, size);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

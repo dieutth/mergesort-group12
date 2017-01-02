@@ -11,28 +11,36 @@ import java.nio.channels.FileChannel;
 public class MMReadStream {
 //	private FileChannel fileChannel;
 	public FileChannel fileChannel;
-	private MappedByteBuffer buffer;
+	public MappedByteBuffer buffer;
+	private long position;
 	
+	public long getPosition(){
+		return position;
+	}
 	public MappedByteBuffer getBuffer() {
 		return buffer;
 	}
-	public void setBuffer(long position, long size){
+	public void setBuffer(long pos, long size){
 		try {
-			buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, size);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	public void setBuffer(){
-		try {
-			buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
+			
+			buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, pos, size);
+			position = pos + size;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	public void setBuffer(long size){
+		try {
+			
+			buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, size);
+			position += size;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public boolean isEndOfStream(){
 		return !buffer.hasRemaining();
 	}
@@ -43,6 +51,7 @@ public class MMReadStream {
 	public MMReadStream(String fileLocation){
 		try {
 			fileChannel = new RandomAccessFile(new File(fileLocation), "r").getChannel();
+			position = 0;
 //			buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
