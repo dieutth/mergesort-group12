@@ -89,6 +89,7 @@ public class MultiwayMergeSort_2 {
 			ws.create(new File(outFolder + loop), 0);
 			ws.write(temp);
 			ws.close();
+			splittedFiles.add(outFolder + loop);
 		}
 		return splittedFiles;
 	}
@@ -172,15 +173,15 @@ public class MultiwayMergeSort_2 {
 //		String fileLocation = "F:\\Data\\intergers\\test\\test100M\\f250mil_10mil";
 //		String outFolder = "F:\\Data\\intergers\\test\\test100M\\splitted_";
 //		String mergedFolder = "F:\\Data\\intergers\\test\\test100M\\merged_";
-		
+
 		String fileLocation = "F:\\Data\\intergers\\test\\test1k\\big_file";
 		String outFolder = "F:\\Data\\intergers\\test\\test1k\\splitted_";
 		String mergedFolder = "F:\\Data\\intergers\\test\\test1k\\merged_";
 
 		File in = new File(fileLocation);
-		int N = 10000000;
-		int M = 100000;
-		int d = 24;
+		int N = 250000000;
+		int M = 1300000;
+		int d = 9;
 		MultiwayMergeSort_2 mms = new MultiwayMergeSort_2();
 		long startTime = System.nanoTime();
 		List<String> queue = mms.split(in, N, M, outFolder);
