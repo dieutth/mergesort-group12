@@ -151,7 +151,7 @@ public class MultiwayMergeSort_2 {
 			
 			for (int i = start; i < endIndex; i++){
 				ReadStream_4 rs = new ReadStream_4();
-				rs.open(new File(queue.get(i)), blockSize);
+				rs.open(new File(queue.get(i)), blockSize*4);
 				d_queue.add(rs);
 			}
 
@@ -179,15 +179,31 @@ public class MultiwayMergeSort_2 {
 		String mergedFolder = "F:\\Data\\intergers\\test\\test1k\\merged_";
 
 		File in = new File(fileLocation);
-		int N = 250000000;
-		int M = 1300000;
+		int N = 10000000;
+		int M = 100000;
 		int d = 9;
 		MultiwayMergeSort_2 mms = new MultiwayMergeSort_2();
 		long startTime = System.nanoTime();
 		List<String> queue = mms.split(in, N, M, outFolder);
-		mms.runPasses(queue, M, d, mergedFolder);
 		long r4 = System.nanoTime() - startTime;
-		System.out.println("time 4: " + r4);
+		System.out.println("split time: " + r4);
 		
+		startTime = System.nanoTime();
+		mms.runPasses(queue, M, d, mergedFolder);
+		r4 = System.nanoTime() - startTime;
+		System.out.println("merge time: " + r4);
+		
+		ReadStream_4 rs = new ReadStream_4();
+		int size = (int)new File(fileLocation).length();
+		int[] array = new int[size];
+		
+		startTime = System.nanoTime();
+		rs.open(in, size);
+		for (int i = 0; i < size/4; i++){
+			array[i] = rs.read_next();
+		}
+		Arrays.sort(array);
+		r4 = System.nanoTime() - startTime;
+		System.out.println("internal sort time: " + r4);
 	}
 }
