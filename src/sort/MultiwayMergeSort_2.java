@@ -57,17 +57,21 @@ public class MultiwayMergeSort_2 {
 		 */
 		rs.open(in, M*4);
 		int loop = N/M; //number of time to loop
-		
+		PriorityQueue<Integer> pq = new PriorityQueue<Integer>();
 		int[] temp = new int[M]; //store M numbers read from input file. 
 		for (int i = 0; i < loop; i++){
 			for (int j = 0; j < M; j++)
 				try {
-					temp[j] = rs.read_next();
+//					temp[j] = rs.read_next();
+					pq.add(rs.read_next());
 				} catch (EOFException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			Arrays.sort(temp); //sort temp before writing to splitted file
+			for (int j = 0; j < M; j++){
+				temp[j] = pq.poll();
+			}
+//			Arrays.sort(temp); //sort temp before writing to splitted file
 			
 			ws.create(new File(outFolder + i), 0); //create splitted file
 			ws.write(temp); //write temp to file.
@@ -80,12 +84,13 @@ public class MultiwayMergeSort_2 {
 			temp = new int[r];
 			for (int i = 0; i<r; i++)
 				try {
-					temp[i] = rs.read_next();
+					pq.add(rs.read_next());
 				} catch (EOFException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			Arrays.sort(temp);
+			for (int i = 0; i<r; i++)
+				temp[i] = pq.poll();
 			ws.create(new File(outFolder + loop), 0);
 			ws.write(temp);
 			ws.close();
@@ -95,7 +100,6 @@ public class MultiwayMergeSort_2 {
 	}
 	public void mergeSort(List<ReadStream_4> d_queue, int blockSize, File out) throws EOFException{
 		WriteStream_4 ws = new WriteStream_4();
-		
 		int d = d_queue.size(); 
 		Entry[] entries = new Entry[d];
 		PriorityQueue<Entry> pq = new PriorityQueue<Entry>(d);
@@ -108,7 +112,6 @@ public class MultiwayMergeSort_2 {
 		int[] outputBlock = new int[blockSize];
 		int filled = 0;
 		int ind;
-		
 		while (!pq.isEmpty()){
 			if (filled == blockSize){ //when outputBlock is fully filled then write it to output file
 				ws.write(outputBlock);
@@ -127,16 +130,21 @@ public class MultiwayMergeSort_2 {
 			ws.write(outputBlock);
 		}
 		else{
-			ws.write(Arrays.copyOfRange(outputBlock, 0, filled+1));
+			ws.write(Arrays.copyOfRange(outputBlock, 0, filled));
 		}
 		ws.close();
 	}
 	
+	/*
+	 * @param: queue: a list of splitted_file_locations that need to be merged
+	 * @param: M: available memory, ie. number of elements can be fit to memory at a time
+	 * @param: d: number of stream to be merged at a time
+	 * @param: mergedFolder: folder location for storing merged files
+	 */
 	public void runPasses(List<String> queue,
 							int M, int d, String mergedFolder) throws EOFException{
 		
 		int numberOfFileLeft = queue.size();
-		
 		File mergedFile;
 		String mergedFileLocation; 
 		int start = 0;
@@ -145,7 +153,7 @@ public class MultiwayMergeSort_2 {
 			mergedFileLocation = mergedFolder + start;
 			mergedFile = new File(mergedFileLocation);
 			
-			//take only d files for each merge-sort. If there is only x<d files left, merge them all
+			//take only d files for each merge-sort. If there is x < d files left, merge them all
 			int endIndex = Math.min(queue.size(), start+d);
 			List<ReadStream_4> d_queue = new ArrayList<ReadStream_4>();
 			
@@ -174,14 +182,25 @@ public class MultiwayMergeSort_2 {
 //		String outFolder = "F:\\Data\\intergers\\test\\test100M\\splitted_";
 //		String mergedFolder = "F:\\Data\\intergers\\test\\test100M\\merged_";
 
-		String fileLocation = "F:\\Data\\intergers\\test\\test1k\\big_file";
-		String outFolder = "F:\\Data\\intergers\\test\\test1k\\splitted_";
-		String mergedFolder = "F:\\Data\\intergers\\test\\test1k\\merged_";
+//		String fileLocation = "F:\\Data\\intergers\\test\\test1k\\big_file";
+//		String outFolder = "F:\\Data\\intergers\\test\\test1k\\splitted_";
+//		String mergedFolder = "F:\\Data\\intergers\\test\\test1k\\merged_";
+		
+//		String fileLocation = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\100mil\\100mil";
+//		String outFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\100mil\\splitted_";
+//		String mergedFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\100mil\\merged_";
+//		String fileLocation = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1mil\\1mil";
+//		String outFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1mil\\splitted_";
+//		String mergedFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1mil\\merged_";
 
+		String fileLocation = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\1k";
+		String outFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\splitted_";
+		String mergedFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\merged_";
+		
 		File in = new File(fileLocation);
-		int N = 10000000;
-		int M = 100000;
-		int d = 9;
+		int N = (int)in.length()/4;
+		int M = 100;
+		int d = 4;
 		MultiwayMergeSort_2 mms = new MultiwayMergeSort_2();
 		long startTime = System.nanoTime();
 		List<String> queue = mms.split(in, N, M, outFolder);
@@ -193,17 +212,17 @@ public class MultiwayMergeSort_2 {
 		r4 = System.nanoTime() - startTime;
 		System.out.println("merge time: " + r4);
 		
-		ReadStream_4 rs = new ReadStream_4();
-		int size = (int)new File(fileLocation).length();
-		int[] array = new int[size];
-		
-		startTime = System.nanoTime();
-		rs.open(in, size);
-		for (int i = 0; i < size/4; i++){
-			array[i] = rs.read_next();
-		}
-		Arrays.sort(array);
-		r4 = System.nanoTime() - startTime;
-		System.out.println("internal sort time: " + r4);
+//		ReadStream_4 rs = new ReadStream_4();
+//		int size = (int)new File(fileLocation).length();
+//		int[] array = new int[size];
+//		
+//		startTime = System.nanoTime();
+//		rs.open(in, size);
+//		for (int i = 0; i < size/4; i++){
+//			array[i] = rs.read_next();
+//		}
+//		Arrays.sort(array);
+//		r4 = System.nanoTime() - startTime;
+//		System.out.println("internal sort time: " + r4);
 	}
 }
