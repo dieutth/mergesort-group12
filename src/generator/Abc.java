@@ -12,8 +12,7 @@ import java.util.Random;
 import inoutstream.MMWriteStream;
 
 public class Abc {
-	private static final int NUMBER_OF_INTERGER = 500000000;
-	public static void generateWithMM(String fileLocation){
+	public static void generateWithMM(String fileLocation, int NUMBER_OF_INTERGER){
 		MMWriteStream mmws = new MMWriteStream(fileLocation);
 		Random random = new Random();
 		int oneLoop = 5000000;
@@ -42,12 +41,12 @@ public class Abc {
 		}
 		mmws.close();
 	}
-	public void generate_32bit_integer(File file) throws FileNotFoundException{
+	public void generate_32bit_integer(File file, int NUMBER_OF_INTERGER) throws FileNotFoundException{
 		FileOutputStream fos = new FileOutputStream(file);
 		DataOutputStream dos = new DataOutputStream(fos);
 		
 		Random random = new Random();
-		int oneLoop = 1000000;
+		int oneLoop = 1000;
 		byte[] buffer;
 		int[] intBuffer = new int[oneLoop];
 		int loop = NUMBER_OF_INTERGER/oneLoop;
@@ -81,11 +80,18 @@ public class Abc {
 //		int number_of_files = 500;
 		int number_of_files = 1;
 		long startTime = System.currentTimeMillis();
+		int[] a = {1000};//, 1000000, 20000000, 100000000};
+		String[] s = {"1k"};//, "1mil", "20mil", "100mil"};
 		for (int i=0; i<number_of_files; i++){
-			String fileLocation = "F://Data//intergers//test//test500M//f500mil_noMM";// + Integer.toString(i);
+//			String fileLocation = "D://data//";// + Integer.toString(i);
 //				new IntegerGenerator().generate_32bit_integer(new File(fileLocation));
 //			new Abc().generateWithMM(fileLocation);
-			new Abc().generate_32bit_integer(new File(fileLocation));
+			int count = 0;
+			for (int NUMBER_OF_INTERGER : a){
+				String fileLocation = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\" + s[count] + "\\" + s[count];
+				new Abc().generate_32bit_integer(new File(fileLocation), NUMBER_OF_INTERGER);
+				count++;
+			}
 		}
 		System.out.println(System.currentTimeMillis() - startTime);
 	}

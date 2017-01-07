@@ -193,14 +193,14 @@ public class MultiwayMergeSort_2 {
 //		String outFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1mil\\splitted_";
 //		String mergedFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1mil\\merged_";
 
-		String fileLocation = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\1k";
-		String outFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\splitted_";
-		String mergedFolder = "C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\merged_";
+		String fileLocation = "C:\\Users\\Alhakeem\\Downloads\\ULB\\DB system architecture\\Project\\files\\200mil\\200mil0";
+		String outFolder = "C:\\Users\\Alhakeem\\Downloads\\ULB\\DB system architecture\\Project\\files\\out\\";
+		String mergedFolder = "C:\\Users\\Alhakeem\\Downloads\\ULB\\DB system architecture\\Project\\files\\merged\\";
 		
 		File in = new File(fileLocation);
 		int N = (int)in.length()/4;
-		int M = 100;
-		int d = 4;
+		int M = 1000000;
+		int d = 19;
 		MultiwayMergeSort_2 mms = new MultiwayMergeSort_2();
 		long startTime = System.nanoTime();
 		List<String> queue = mms.split(in, N, M, outFolder);

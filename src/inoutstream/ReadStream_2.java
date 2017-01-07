@@ -1,6 +1,5 @@
 package inoutstream;
 
-import static java.lang.Integer.MAX_VALUE;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -46,7 +45,9 @@ public class ReadStream_2 {
 		//File in = new File("F:\\Data\\intergers\\big_file_1");
 //		File in = new File("F:\\Data\\intergers\\test\\f25mil0");
 //		File in = new File("F:\\Data\\intergers\\test\\f250mil_10mil");
-		File in = new File("F:\\Data\\intergers\\test\\test500M\\f500mil");
+		File in = new File("C:\\Users\\Alhakeem\\dieu_workspace\\data\\1k\\merged_8");
+//		File in = new File("C:\\Users\\Alhakeem\\dieu_workspace\\data\\100mil\\merged_100");
+//		File in = new File("C:\\Users\\Alhakeem\\dieu_workspace\\data\\100mil\\merged_100");
 //		rs.open(in);
 		rs4.open(in, 12000*4);
 		rs2.open(in);
@@ -93,7 +94,9 @@ public class ReadStream_2 {
 		startTime = System.nanoTime();
 		while(!rs4.isEndOfStream())
 			try {
-				rs4.read_next();
+				int r = rs4.read_next();
+//				if (count > 99999000)
+					System.out.println(r);
 				count++;	
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
